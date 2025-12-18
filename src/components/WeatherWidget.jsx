@@ -5,6 +5,7 @@ const WeatherWidget = ({ lang, apiConfig }) => {
     const [aqi, setAqi] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
+    const [location, setLocation] = useState({ lat: 26.8467, lon: 80.9462, city: 'Lucknow' }); // Default: Lucknow
 
     const t = {
         weather: lang === 'hi' ? 'मौसम' : 'Weather',
@@ -16,7 +17,7 @@ const WeatherWidget = ({ lang, apiConfig }) => {
         unhealthy: lang === 'hi' ? 'खराब' : 'Unhealthy',
         veryUnhealthy: lang === 'hi' ? 'बहुत खराब' : 'Very Unhealthy',
         hazardous: lang === 'hi' ? 'खतरनाक' : 'Hazardous',
-        lucknow: lang === 'hi' ? 'लखनऊ' : 'Lucknow'
+        yourLocation: lang === 'hi' ? 'आपका स्थान' : 'Your Location'
     };
 
     const getAqiInfo = (value) => {
@@ -38,11 +39,30 @@ const WeatherWidget = ({ lang, apiConfig }) => {
     };
 
     useEffect(() => {
+        // Get user's location
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setLocation({
+                        lat: position.coords.latitude,
+                        lon: position.coords.longitude,
+                        city: t.yourLocation
+                    });
+                },
+                () => {
+                    // Geolocation denied or error - use default Lucknow
+                    console.log('Geolocation denied, using Lucknow');
+                }
+            );
+        }
+    }, []);
+
+    useEffect(() => {
         const fetchData = async () => {
             try {
                 // Fetch weather with daily min/max temperatures
                 const weatherRes = await fetch(
-                    'https://api.open-meteo.com/v1/forecast?latitude=26.8467&longitude=80.9462&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=Asia/Kolkata&forecast_days=1'
+                    `https://api.open-meteo.com/v1/forecast?latitude=${location.lat}&longitude=${location.lon}&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto&forecast_days=1`
                 );
                 const weatherData = await weatherRes.json();
                 if (weatherData.daily) {
@@ -57,9 +77,9 @@ const WeatherWidget = ({ lang, apiConfig }) => {
             }
 
             try {
-                // Use Open-Meteo Air Quality API for accurate Lucknow AQI
+                // Use Open-Meteo Air Quality API for AQI based on location
                 const aqiRes = await fetch(
-                    'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=26.8467&longitude=80.9462&current=us_aqi'
+                    `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${location.lat}&longitude=${location.lon}&current=us_aqi`
                 );
                 const aqiData = await aqiRes.json();
                 if (aqiData.current && aqiData.current.us_aqi) {
@@ -73,7 +93,7 @@ const WeatherWidget = ({ lang, apiConfig }) => {
         };
 
         fetchData();
-    }, []);
+    }, [location]);
 
     if (loading) {
         return (
@@ -96,7 +116,7 @@ const WeatherWidget = ({ lang, apiConfig }) => {
                         <div>
                             <span className="weather-temp">{weather.tempMax}°C</span>
                             <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginLeft: '3px' }}>/ {weather.tempMin}°C</span>
-                            <span className="weather-city">{t.lucknow}</span>
+                            <span className="weather-city">{location.city}</span>
                         </div>
                     </div>
                 ) : (

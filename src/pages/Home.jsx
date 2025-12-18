@@ -64,11 +64,15 @@ const Home = ({ lang, toast }) => {
       const popSnap = await getDoc(doc(db, "settings", "popular"));
       if (popSnap.exists()) setPopularSettings(popSnap.data());
 
-      // Fetch latest e-paper for today's PDF button
+      // Fetch today's e-paper (match by actual date)
       const qPapers = query(collection(db, "epapers"), orderBy("timestamp", "desc"));
       const papersSnap = await getDocs(qPapers);
       if (!papersSnap.empty) {
-        setLatestPaper(papersSnap.docs[0].data());
+        const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        const todaysPaper = papersSnap.docs.find(doc => doc.data().date === today);
+        if (todaysPaper) {
+          setLatestPaper(todaysPaper.data());
+        }
       }
     } catch (e) { console.error(e); }
     setLoading(false);
