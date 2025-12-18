@@ -15,6 +15,7 @@ const Home = ({ lang, toast }) => {
   const [selectedNews, setSelectedNews] = useState(null);
   const [features, setFeatures] = useState({ newsletterEnabled: true, adsEnabled: true });
   const [popularSettings, setPopularSettings] = useState({ weekManual: [], monthManual: [], autoPopulate: true });
+  const [latestPaper, setLatestPaper] = useState(null);
 
   const t = {
     topStory: lang === 'hi' ? 'प्रमुख खबर' : 'TOP STORY',
@@ -62,6 +63,13 @@ const Home = ({ lang, toast }) => {
 
       const popSnap = await getDoc(doc(db, "settings", "popular"));
       if (popSnap.exists()) setPopularSettings(popSnap.data());
+
+      // Fetch latest e-paper for today's PDF button
+      const qPapers = query(collection(db, "epapers"), orderBy("timestamp", "desc"));
+      const papersSnap = await getDocs(qPapers);
+      if (!papersSnap.empty) {
+        setLatestPaper(papersSnap.docs[0].data());
+      }
     } catch (e) { console.error(e); }
     setLoading(false);
   };
@@ -184,6 +192,19 @@ const Home = ({ lang, toast }) => {
 
       <aside id="promo-sidebar">
         <WeatherWidget lang={lang} />
+
+        {features.todaysPdfEnabled !== false && latestPaper && (
+          <a
+            href={latestPaper.pdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="todays-pdf-btn"
+          >
+            <i className="fas fa-file-pdf"></i>
+            <span>{lang === 'hi' ? "आज का अंक डाउनलोड करें" : "Download Today's Edition"}</span>
+            <small>{latestPaper.date}</small>
+          </a>
+        )}
 
         {features.popularWeekEnabled !== false && (
           <SidebarSection title={t.popularWeek} icon="fa-fire-alt">

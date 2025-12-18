@@ -38,7 +38,8 @@ const Admin = () => {
     topNewsEnabled: true,
     popularWeekEnabled: true,
     popularMonthEnabled: true,
-    trendingNewsEnabled: true
+    trendingNewsEnabled: true,
+    todaysPdfEnabled: true
   });
 
   const [apiSettings, setApiSettings] = useState({
@@ -72,6 +73,8 @@ const Admin = () => {
   const [pdfFile, setPdfFile] = useState(null);
 
   const [adPosition, setAdPosition] = useState('sidebar');
+  const [adFile, setAdFile] = useState(null);
+  const [adImagePreview, setAdImagePreview] = useState(null);
   const [editingNews, setEditingNews] = useState(null);
   const [showApiKeys, setShowApiKeys] = useState({});
   const [successModal, setSuccessModal] = useState({ show: false, message: '', type: 'success' });
@@ -340,12 +343,12 @@ const Admin = () => {
         await addDoc(collection(db, "ads"), { position: 'google', timestamp: Date.now() });
         showSuccess("Google Ad Slot Added!");
       } else {
-        if (!file) throw new Error("Select Image");
-        const imageUrl = await uploadToImgBB(file);
+        if (!adFile) throw new Error("Select Image");
+        const imageUrl = await uploadToImgBB(adFile);
         await addDoc(collection(db, "ads"), { imgUrl: imageUrl, position: adPosition, timestamp: Date.now() });
         showSuccess("Ad Published!");
       }
-      setFile(null); setImagePreview(null);
+      setAdFile(null); setAdImagePreview(null);
       fetchAndCleanup();
     } catch (err) { showSuccess("Error: " + err.message, 'error'); }
     setLoading(false);
@@ -569,6 +572,11 @@ const Admin = () => {
                 label="Trending News Section"
                 value={featureToggles.trendingNewsEnabled}
                 onChange={(v) => setFeatureToggles({ ...featureToggles, trendingNewsEnabled: v })}
+              />
+              <ToggleSwitch
+                label="Today's PDF Download Button"
+                value={featureToggles.todaysPdfEnabled}
+                onChange={(v) => setFeatureToggles({ ...featureToggles, todaysPdfEnabled: v })}
               />
               <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '2px solid #e2e8f0' }}>
                 <h4 style={{ color: '#f59e0b', marginBottom: '15px' }}><i className="fas fa-crown" style={{ marginRight: '8px' }}></i>Premium Features</h4>
@@ -832,8 +840,18 @@ const Admin = () => {
                   </select>
                   {adPosition !== 'google' && (
                     <>
-                      <input type="file" accept="image/*" onChange={handleFileChange} required />
-                      {imagePreview && <img src={imagePreview} alt="Preview" style={{ maxHeight: '80px', borderRadius: '6px' }} />}
+                      <input type="file" accept="image/*" onChange={(e) => {
+                        const selectedFile = e.target.files[0];
+                        setAdFile(selectedFile);
+                        if (selectedFile) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => setAdImagePreview(reader.result);
+                          reader.readAsDataURL(selectedFile);
+                        } else {
+                          setAdImagePreview(null);
+                        }
+                      }} required />
+                      {adImagePreview && <img src={adImagePreview} alt="Preview" style={{ maxHeight: '80px', borderRadius: '6px' }} />}
                     </>
                   )}
                   {adPosition === 'google' && (
