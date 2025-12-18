@@ -2362,3 +2362,151 @@ footer {
         transform: translateX(-100%);
     }
 }
+
+/* --- EPAPER PAGE --- */
+.epaper-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.search-filter {
+    display: flex;
+    align-items: center;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 8px 15px;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 300px;
+}
+
+.search-filter input {
+    border: none;
+    background: transparent;
+    margin-left: 10px;
+    color: var(--text-primary);
+    width: 100%;
+    outline: none;
+}
+
+.view-toggle button {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.view-toggle button.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.epaper-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.epaper-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.epaper-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.epaper-list .epaper-card {
+    flex-direction: row;
+    text-align: left;
+    justify-content: space-between;
+}
+
+.epaper-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.epaper-icon {
+    font-size: 3rem;
+    color: #ef4444;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.epaper-list .epaper-icon {
+    margin-bottom: 0;
+    margin-right: 20px;
+    font-size: 2.5rem;
+}
+
+.epaper-info h3 {
+    margin: 0 0 5px 0;
+    color: var(--text-primary);
+}
+
+.epaper-date {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.epaper-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.epaper-list .epaper-actions {
+    margin-top: 0;
+    width: auto;
+}
+
+.preview-btn,
+.download-btn {
+    flex: 1;
+    padding: 8px 15px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.preview-btn {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.download-btn {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.epaper-list .preview-btn,
+.epaper-list .download-btn {
+    padding: 8px 20px;
+}
