@@ -2363,150 +2363,276 @@ footer {
     }
 }
 
-/* --- EPAPER PAGE --- */
+/* --- E-PAPER PAGE --- */
 .epaper-controls {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
     flex-wrap: wrap;
     gap: 15px;
+    margin: 30px 0;
+    padding: 20px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
 }
 
 .search-filter {
     display: flex;
     align-items: center;
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    padding: 8px 15px;
+    gap: 10px;
+    background: var(--bg-color);
+    padding: 10px 15px;
     border-radius: 8px;
-    width: 100%;
-    max-width: 300px;
+    border: 1px solid var(--border-color);
+}
+
+.search-filter i {
+    color: var(--text-secondary);
 }
 
 .search-filter input {
     border: none;
     background: transparent;
-    margin-left: 10px;
     color: var(--text-primary);
-    width: 100%;
+    font-size: 0.95rem;
     outline: none;
 }
 
-.view-toggle button {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    color: var(--text-muted);
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    margin-left: 10px;
+.clear-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
     cursor: pointer;
+    padding: 5px;
+}
+
+.clear-btn:hover {
+    color: var(--primary);
+}
+
+.view-toggle {
+    display: flex;
+    gap: 5px;
+    background: var(--bg-color);
+    padding: 5px;
+    border-radius: 8px;
+}
+
+.view-toggle button {
+    padding: 10px 15px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 6px;
     transition: all 0.2s;
 }
 
 .view-toggle button.active {
     background: var(--primary);
     color: white;
-    border-color: var(--primary);
 }
 
+.view-toggle button:hover:not(.active) {
+    background: var(--border-color);
+}
+
+/* Grid View - Cards in responsive grid */
 .epaper-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    gap: 25px;
+    width: 100%;
+    padding: 20px 0;
 }
 
+/* List View - Vertical stack like banners */
 .epaper-list {
     display: flex;
     flex-direction: column;
     gap: 15px;
-}
-
-.epaper-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    transition: transform 0.2s, box-shadow 0.2s;
+    width: 100%;
+    padding: 20px 0;
 }
 
 .epaper-list .epaper-card {
     flex-direction: row;
+    align-items: center;
+    padding: 20px 25px;
+}
+
+.epaper-list .epaper-icon {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.epaper-list .epaper-info {
+    flex: 1;
     text-align: left;
-    justify-content: space-between;
+}
+
+.epaper-list .epaper-actions {
+    flex-direction: row;
+    gap: 10px;
+}
+
+/* E-Paper Card */
+.epaper-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid var(--border-color);
 }
 
 .epaper-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-lg);
 }
 
 .epaper-icon {
-    font-size: 3rem;
-    color: #ef4444;
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2.5rem;
     margin-bottom: 15px;
     position: relative;
 }
 
-.epaper-list .epaper-icon {
-    margin-bottom: 0;
-    margin-right: 20px;
-    font-size: 2.5rem;
+.premium-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .epaper-info h3 {
-    margin: 0 0 5px 0;
+    font-size: 1.2rem;
     color: var(--text-primary);
+    margin-bottom: 5px;
 }
 
 .epaper-date {
-    color: var(--text-muted);
-    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
 }
 
 .epaper-actions {
-    margin-top: 15px;
     display: flex;
-    gap: 10px;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 15px;
     width: 100%;
 }
 
-.epaper-list .epaper-actions {
-    margin-top: 0;
-    width: auto;
-}
-
-.preview-btn,
-.download-btn {
-    flex: 1;
-    padding: 8px 15px;
-    border-radius: 6px;
+.epaper-actions button {
+    padding: 12px 20px;
     border: none;
+    border-radius: 8px;
+    font-weight: 600;
     cursor: pointer;
-    font-weight: 500;
-    transition: opacity 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
+    transition: all 0.2s;
+    font-size: 0.9rem;
 }
 
 .preview-btn {
-    background: #eff6ff;
-    color: #2563eb;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+}
+
+.preview-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .download-btn {
-    background: #ecfdf5;
-    color: #059669;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
 }
 
-.epaper-list .preview-btn,
-.epaper-list .download-btn {
-    padding: 8px 20px;
+.download-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Loading and Empty States */
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+    gap: 15px;
+}
+
+.loading-state i {
+    font-size: 2.5rem;
+    color: var(--primary);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+    gap: 15px;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    opacity: 0.5;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .epaper-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .epaper-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .epaper-list .epaper-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .epaper-list .epaper-info {
+        text-align: center;
+    }
+
+    .epaper-list .epaper-actions {
+        flex-direction: column;
+        width: 100%;
+    }
 }
