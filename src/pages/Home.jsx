@@ -36,6 +36,17 @@ const Home = ({ lang, toast }) => {
     fetchData();
   }, []);
 
+  // Close modal on ESC key press
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') setSelectedNews(null);
+    };
+    if (selectedNews) {
+      document.addEventListener('keydown', handleEsc);
+    }
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [selectedNews]);
+
   const fetchData = async () => {
     try {
       const qNews = query(collection(db, "news"), orderBy("timestamp", "desc"));

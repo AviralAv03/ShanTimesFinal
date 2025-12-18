@@ -1009,7 +1009,7 @@ aside#promo-sidebar {
     border-radius: 12px;
     margin-bottom: 25px;
     max-height: 400px;
-    object-fit: cover;
+    object-fit: contain;
     outline: none !important;
     outline-offset: 0 !important;
 }
