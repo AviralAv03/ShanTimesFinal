@@ -2232,7 +2232,7 @@ footer {
     height: auto;
     border-radius: 8px;
     margin: 15px 0;
-    object-fit: cover;
+    object-fit: contain;
     outline: none !important;
     outline-offset: 0 !important;
 }
