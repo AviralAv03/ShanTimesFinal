@@ -2304,7 +2304,61 @@ footer {
     margin-bottom: 4px;
 }
 
-.todays-pdf-btn small {
-    font-size: 0.85rem;
-    opacity: 0.9;
+
+/* --- TICKER --- */
+.ticker-wrap {
+    width: 100%;
+    background-color: #ef4444;
+    color: white;
+    overflow: hidden;
+    position: relative;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid #b91c1c;
+    box-sizing: border-box;
+}
+
+.ticker-badge {
+    background-color: #991b1b;
+    color: white;
+    padding: 0 15px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    z-index: 10;
+    position: relative;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    min-width: fit-content;
+}
+
+.ticker-container {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.ticker-content {
+    white-space: nowrap;
+    display: inline-block;
+    animation: ticker 30s linear infinite;
+    padding-left: 100%;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+@keyframes ticker {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-100%);
+    }
 }
