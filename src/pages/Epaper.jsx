@@ -74,12 +74,12 @@ const Epaper = ({ lang }) => {
 
   return (
     <div className="container" style={{ flexDirection: 'column' }}>
-      <div className="page-header" style={{ width: '100%' }}>
-        <h1 className="page-title">
+      <div className="page-header" style={{ width: '100%', marginBottom: '0', paddingBottom: '10px' }}>
+        <h1 className="page-title" style={{ marginBottom: '5px' }}>
           <i className="fas fa-newspaper" style={{ marginRight: '15px', color: 'var(--primary)' }}></i>
           {t.title}
         </h1>
-        <p style={{ color: 'var(--text-secondary)', marginTop: '10px' }}>{t.subtitle}</p>
+        <p style={{ color: 'var(--text-secondary)', marginTop: '5px' }}>{t.subtitle}</p>
       </div>
 
       <div className="epaper-controls" style={{ width: '100%' }}>
