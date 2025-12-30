@@ -68,7 +68,7 @@ const Home = ({ lang, toast }) => {
       const qPapers = query(collection(db, "epapers"), orderBy("timestamp", "desc"));
       const papersSnap = await getDocs(qPapers);
       if (!papersSnap.empty) {
-        const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }); // Format: YYYY-MM-DD in IST
         const todaysPaper = papersSnap.docs.find(doc => doc.data().date === today);
         if (todaysPaper) {
           setLatestPaper(todaysPaper.data());
