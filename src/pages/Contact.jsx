@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, getDoc } from 'firebase/firestore';
 
 const Contact = ({ lang, toast }) => {
   const [formData, setFormData] = useState({
@@ -12,9 +12,28 @@ const Contact = ({ lang, toast }) => {
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [mapEnabled, setMapEnabled] = useState(true);
+  const [mapEmbedUrl, setMapEmbedUrl] = useState('');
 
   useEffect(() => {
     document.title = lang === 'hi' ? "संपर्क करें | Shan Times" : "Contact Us | Shan Times";
+
+    // Load map settings from Firebase
+    const loadMapSettings = async () => {
+      try {
+        const featSnap = await getDoc(doc(db, "settings", "features"));
+        if (featSnap.exists()) {
+          setMapEnabled(featSnap.data().mapEnabled !== false);
+        }
+        const contactSnap = await getDoc(doc(db, "settings", "contact"));
+        if (contactSnap.exists() && contactSnap.data().mapEmbedUrl) {
+          setMapEmbedUrl(contactSnap.data().mapEmbedUrl);
+        }
+      } catch (e) {
+        console.log("Error loading map settings:", e);
+      }
+    };
+    loadMapSettings();
   }, [lang]);
 
   const t = {
@@ -23,8 +42,8 @@ const Contact = ({ lang, toast }) => {
     phoneLabel: lang === 'hi' ? 'फ़ोन' : 'Phone',
     emailLabel: lang === 'hi' ? 'ईमेल' : 'Email',
     addressText: lang === 'hi'
-      ? '175/41 पीर जलील, दक्षिण खटिकाना, अमीनाबाद पार्क, लखनऊ - 226018'
-      : '175/41 Peer Jaleel, South Khatikana, Aminabad Park, Lucknow - 226018',
+      ? '175/41 पीर जलील, अमीनाबाद पार्क, लखनऊ - 226018'
+      : '175/41 Peer Jaleel, Aminabad Park, Lucknow - 226018',
     mgmtTitle: lang === 'hi' ? 'प्रबंधन टीम' : 'Management Team',
     founder: lang === 'hi' ? 'संस्थापक' : 'Founder',
     editor: lang === 'hi' ? 'संपादक' : 'Editor',
@@ -120,13 +139,8 @@ const Contact = ({ lang, toast }) => {
           <div className="contact-row">
             <p><i className="fas fa-phone"></i> <strong>{t.phoneLabel}:</strong> 9120967777, 9005008529</p>
           </div>
-          <div className="contact-row">
-            <p><i className="fas fa-envelope"></i> <strong>{t.emailLabel}:</strong> shantimes2009@gmail.com</p>
-          </div>
           <div className="contact-row" style={{ borderBottom: 'none' }}>
-            <p><i className="fas fa-clock"></i> <strong>{t.workingHours}:</strong></p>
-            <p style={{ marginLeft: '30px', marginTop: '8px' }}>{t.weekdays}</p>
-            <p style={{ marginLeft: '30px', marginTop: '5px' }}>{t.sunday}</p>
+            <p><i className="fas fa-envelope"></i> <strong>{t.emailLabel}:</strong> shantimes2009@gmail.com</p>
           </div>
 
           <div style={{
@@ -229,25 +243,27 @@ const Contact = ({ lang, toast }) => {
         </div>
       </div>
 
-      <div style={{
-        marginTop: '40px',
-        width: '100%',
-        maxWidth: '1000px',
-        borderRadius: '16px',
-        overflow: 'hidden',
-        border: '1px solid var(--border-color)'
-      }}>
-        <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3559.5!2d80.9462!3d26.8467!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjbCsDUwJzQ4LjEiTiA4MMKwNTYnNDYuMyJF!5e0!3m2!1sen!2sin!4v1234567890"
-          width="100%"
-          height="300"
-          style={{ border: 0 }}
-          allowFullScreen=""
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          title="Shan Times Location"
-        ></iframe>
-      </div>
+      {mapEnabled && (
+        <div style={{
+          marginTop: '40px',
+          width: '100%',
+          maxWidth: '1000px',
+          borderRadius: '16px',
+          overflow: 'hidden',
+          border: '1px solid var(--border-color)'
+        }}>
+          <iframe
+            src={mapEmbedUrl || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3559.5!2d80.9462!3d26.8467!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjbCsDUwJzQ4LjEiTiA4MMKwNTYnNDYuMyJF!5e0!3m2!1sen!2sin!4v1234567890"}
+            width="100%"
+            height="300"
+            style={{ border: 0 }}
+            allowFullScreen=""
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title="Shan Times Location"
+          ></iframe>
+        </div>
+      )}
     </div>
   );
 };

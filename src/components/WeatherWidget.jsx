@@ -42,12 +42,36 @@ const WeatherWidget = ({ lang, apiConfig }) => {
         // Get user's location
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setLocation({
-                        lat: position.coords.latitude,
-                        lon: position.coords.longitude,
-                        city: t.yourLocation
-                    });
+                async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+
+                    // Reverse geocode to get city name
+                    try {
+                        const geoRes = await fetch(
+                            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=${lang}`
+                        );
+                        const geoData = await geoRes.json();
+                        const cityName = geoData.address?.city ||
+                            geoData.address?.town ||
+                            geoData.address?.village ||
+                            geoData.address?.state_district ||
+                            geoData.address?.state ||
+                            (lang === 'hi' ? 'आपका स्थान' : 'Your Location');
+
+                        setLocation({
+                            lat: lat,
+                            lon: lon,
+                            city: cityName
+                        });
+                    } catch (e) {
+                        console.log('Geocoding error:', e);
+                        setLocation({
+                            lat: lat,
+                            lon: lon,
+                            city: lang === 'hi' ? 'आपका स्थान' : 'Your Location'
+                        });
+                    }
                 },
                 () => {
                     // Geolocation denied or error - use default Lucknow
@@ -55,7 +79,7 @@ const WeatherWidget = ({ lang, apiConfig }) => {
                 }
             );
         }
-    }, []);
+    }, [lang]);
 
     useEffect(() => {
         const fetchData = async () => {

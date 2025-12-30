@@ -5,7 +5,7 @@ import { signOut } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { useNavigate } from 'react-router-dom';
 import RichTextEditor from './components/RichTextEditor';
-import { uploadPdfToSupabase, deletePdfFromSupabase } from './supabase';
+import { uploadImageToHostinger, uploadPdfToHostinger, uploadVideoToHostinger, deleteFileFromHostinger } from './hostinger';
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -39,7 +39,20 @@ const Admin = () => {
     popularWeekEnabled: true,
     popularMonthEnabled: true,
     trendingNewsEnabled: true,
-    todaysPdfEnabled: true
+    todaysPdfEnabled: true,
+    mapEnabled: true,
+    socialMediaEnabled: true
+  });
+
+  const [contactSettings, setContactSettings] = useState({
+    mapEmbedUrl: ''
+  });
+
+  const [socialLinks, setSocialLinks] = useState({
+    facebook: '',
+    twitter: '',
+    instagram: '',
+    youtube: ''
   });
 
   const [apiSettings, setApiSettings] = useState({
@@ -64,6 +77,8 @@ const Admin = () => {
   const [isPremium, setIsPremium] = useState(false);
   const [isHeadline, setIsHeadline] = useState(false);
   const [neverExpire, setNeverExpire] = useState(false);
+  const [videoFile, setVideoFile] = useState(null);
+  const [videoPreview, setVideoPreview] = useState(null);
 
   const [tickerText, setTickerText] = useState('');
   const [tickerDuration, setTickerDuration] = useState(24);
@@ -81,6 +96,7 @@ const Admin = () => {
   const [messageFilter, setMessageFilter] = useState('all');
   const [tickerTextHi, setTickerTextHi] = useState('');
   const [tickerTextEn, setTickerTextEn] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const fontOptions = ['Rozha One', 'Noto Sans Devanagari', 'Teko', 'Poppins', 'Arial', 'Georgia', 'Times New Roman'];
   const sizeOptions = ['1.5rem', '1.75rem', '2rem', '2.25rem', '2.5rem', '3rem'];
@@ -122,6 +138,12 @@ const Admin = () => {
 
       const popSnap = await getDoc(doc(db, "settings", "popular"));
       if (popSnap.exists()) setPopularSettings({ ...popularSettings, ...popSnap.data() });
+
+      const contactSnap = await getDoc(doc(db, "settings", "contact"));
+      if (contactSnap.exists()) setContactSettings({ ...contactSettings, ...contactSnap.data() });
+
+      const socialSnap = await getDoc(doc(db, "settings", "social"));
+      if (socialSnap.exists()) setSocialLinks({ ...socialLinks, ...socialSnap.data() });
     } catch (e) { console.log("Settings load error:", e); }
   };
 
@@ -148,6 +170,7 @@ const Admin = () => {
     setTitle(''); setContent(''); setCategory('Lucknow'); setFile(null); setImagePreview(null);
     setTickerText(''); setPaperDate(''); setDriveLink(''); setIsPremium(false); setIsHeadline(false);
     setEditingNews(null); setNeverExpire(false); setPaperPremium(false); setPdfFile(null);
+    setVideoFile(null); setVideoPreview(null);
     document.querySelectorAll('input[type="file"]').forEach(input => input.value = '');
   };
 
@@ -236,12 +259,19 @@ const Admin = () => {
 
   const getImgbbKey = () => apiSettings.imgbbKey || "a7f3177ee25d671123895f60c7d80017";
 
-  const uploadToImgBB = async (imageFile) => {
-    const formData = new FormData();
-    formData.append("image", imageFile);
-    const res = await fetch(`https://api.imgbb.com/1/upload?key=${getImgbbKey()}`, { method: "POST", body: formData });
-    const data = await res.json();
-    return data.data.url;
+  // Use Hostinger for image uploads (fallback to ImgBB if Hostinger fails)
+  const uploadImage = async (imageFile) => {
+    try {
+      return await uploadImageToHostinger(imageFile);
+    } catch (e) {
+      console.log('Hostinger upload failed, trying ImgBB:', e);
+      // Fallback to ImgBB
+      const formData = new FormData();
+      formData.append("image", imageFile);
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${getImgbbKey()}`, { method: "POST", body: formData });
+      const data = await res.json();
+      return data.data.url;
+    }
   };
 
   const handleNewsSubmit = async (e) => {
@@ -249,13 +279,18 @@ const Admin = () => {
     setLoading(true);
     try {
       let imageUrl = editingNews?.imgUrl || "";
-      if (file) imageUrl = await uploadToImgBB(file);
+      let videoUrl = editingNews?.videoUrl || "";
+
+      if (file) imageUrl = await uploadImage(file);
+      if (videoFile) videoUrl = await uploadVideoToHostinger(videoFile);
+
       const expiryTime = neverExpire ? null : Date.now() + (newsDuration * 24 * 60 * 60 * 1000);
       const newsData = {
         title,
         content,
         category,
         imgUrl: imageUrl,
+        videoUrl: videoUrl,
         timestamp: Date.now(),
         expiryTime,
         isPremium,
@@ -311,10 +346,10 @@ const Admin = () => {
     try {
       let pdfUrl = driveLink;
 
-      // If a PDF file is selected, upload to Supabase Storage
+      // If a PDF file is selected, upload to Hostinger Storage
       if (pdfFile) {
         const fileName = `${paperDate}_${Date.now()}.pdf`;
-        pdfUrl = await uploadPdfToSupabase(pdfFile, fileName);
+        pdfUrl = await uploadPdfToHostinger(pdfFile, fileName);
       }
 
       if (!pdfUrl) throw new Error("Please provide a PDF file or Google Drive link");
@@ -344,7 +379,7 @@ const Admin = () => {
         showSuccess("Google Ad Slot Added!");
       } else {
         if (!adFile) throw new Error("Select Image");
-        const imageUrl = await uploadToImgBB(adFile);
+        const imageUrl = await uploadImage(adFile);
         await addDoc(collection(db, "ads"), { imgUrl: imageUrl, position: adPosition, timestamp: Date.now() });
         showSuccess("Ad Published!");
       }
@@ -405,8 +440,26 @@ const Admin = () => {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif' }}>
-      <div style={styles.sidebar}>
+    <div className="admin-wrapper">
+      {/* Mobile Header */}
+      <div className="admin-mobile-header">
+        <button className="admin-hamburger" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          <i className={`fas ${mobileMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
+        </button>
+        <h2 style={{ fontSize: '1.1rem', margin: 0 }}>
+          <i className="fas fa-newspaper" style={{ marginRight: '10px' }}></i>Admin Panel
+        </h2>
+        <div style={{ width: '40px' }}></div>
+      </div>
+
+      {/* Mobile Overlay */}
+      <div
+        className={`admin-overlay ${mobileMenuOpen ? 'open' : ''}`}
+        onClick={() => setMobileMenuOpen(false)}
+      ></div>
+
+      {/* Sidebar */}
+      <div className={`admin-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
         <h2 style={{ fontSize: '1.3rem', marginBottom: '25px', paddingBottom: '15px', borderBottom: '1px solid #334155' }}>
           <i className="fas fa-newspaper" style={{ marginRight: '10px' }}></i>Admin Panel
         </h2>
@@ -422,7 +475,7 @@ const Admin = () => {
             ['contacts', 'fa-envelope', `Messages${unreadCount > 0 ? ` (${unreadCount})` : ''}`],
             ['subscribers', 'fa-users', `Subscribers (${allSubscribers.length})`]
           ].map(([tab, icon, label]) => (
-            <button key={tab} onClick={() => setActiveTab(tab)} style={styles.navBtn(activeTab === tab)}>
+            <button key={tab} onClick={() => { setActiveTab(tab); setMobileMenuOpen(false); }} style={styles.navBtn(activeTab === tab)}>
               <i className={`fas ${icon}`}></i>{label}
             </button>
           ))}
@@ -437,7 +490,8 @@ const Admin = () => {
         </div>
       </div>
 
-      <div style={styles.main}>
+      {/* Main Content */}
+      <div className="admin-main">
         {loading && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
             <div style={{ background: 'white', padding: '30px 50px', borderRadius: '16px', textAlign: 'center' }}>
@@ -590,6 +644,103 @@ const Admin = () => {
                   value={featureToggles.premiumSignup}
                   onChange={(v) => setFeatureToggles({ ...featureToggles, premiumSignup: v })}
                 />
+              </div>
+
+              <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '2px solid #e2e8f0' }}>
+                <h4 style={{ color: '#3b82f6', marginBottom: '15px' }}><i className="fas fa-map-marker-alt" style={{ marginRight: '8px' }}></i>Contact Page Settings</h4>
+                <ToggleSwitch
+                  label="Show Map on Contact Page"
+                  value={featureToggles.mapEnabled}
+                  onChange={(v) => setFeatureToggles({ ...featureToggles, mapEnabled: v })}
+                />
+                <div style={{ marginTop: '15px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#374151' }}>
+                    <i className="fas fa-link" style={{ marginRight: '8px', color: '#3b82f6' }}></i>Google Maps Embed URL
+                  </label>
+                  <input
+                    type="text"
+                    value={contactSettings.mapEmbedUrl}
+                    onChange={(e) => setContactSettings({ ...contactSettings, mapEmbedUrl: e.target.value })}
+                    placeholder="Paste Google Maps embed URL here..."
+                    style={{ ...styles.input, marginBottom: '8px' }}
+                  />
+                  <small style={{ color: '#94a3b8', display: 'block' }}>
+                    Go to Google Maps → Search your location → Click "Share" → "Embed a map" → Copy the src URL from the iframe code
+                  </small>
+                </div>
+                <button
+                  onClick={() => saveSettings('contact', contactSettings)}
+                  style={{ ...styles.button('#3b82f6'), marginTop: '15px' }}
+                >
+                  <i className="fas fa-save"></i>Save Map Settings
+                </button>
+              </div>
+
+              <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '2px solid #e2e8f0' }}>
+                <h4 style={{ color: '#e91e63', marginBottom: '15px' }}><i className="fas fa-share-alt" style={{ marginRight: '8px' }}></i>Social Media Settings</h4>
+                <ToggleSwitch
+                  label="Show Social Media Links in Footer"
+                  value={featureToggles.socialMediaEnabled}
+                  onChange={(v) => setFeatureToggles({ ...featureToggles, socialMediaEnabled: v })}
+                />
+                {featureToggles.socialMediaEnabled && (
+                  <div style={{ marginTop: '15px', display: 'grid', gap: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', color: '#374151', fontSize: '0.9rem' }}>
+                        <i className="fab fa-facebook" style={{ marginRight: '8px', color: '#1877f2' }}></i>Facebook URL
+                      </label>
+                      <input
+                        type="url"
+                        value={socialLinks.facebook}
+                        onChange={(e) => setSocialLinks({ ...socialLinks, facebook: e.target.value })}
+                        placeholder="https://facebook.com/yourpage"
+                        style={styles.input}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', color: '#374151', fontSize: '0.9rem' }}>
+                        <i className="fab fa-twitter" style={{ marginRight: '8px', color: '#1da1f2' }}></i>Twitter/X URL
+                      </label>
+                      <input
+                        type="url"
+                        value={socialLinks.twitter}
+                        onChange={(e) => setSocialLinks({ ...socialLinks, twitter: e.target.value })}
+                        placeholder="https://twitter.com/yourhandle"
+                        style={styles.input}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', color: '#374151', fontSize: '0.9rem' }}>
+                        <i className="fab fa-instagram" style={{ marginRight: '8px', color: '#e4405f' }}></i>Instagram URL
+                      </label>
+                      <input
+                        type="url"
+                        value={socialLinks.instagram}
+                        onChange={(e) => setSocialLinks({ ...socialLinks, instagram: e.target.value })}
+                        placeholder="https://instagram.com/yourhandle"
+                        style={styles.input}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', color: '#374151', fontSize: '0.9rem' }}>
+                        <i className="fab fa-youtube" style={{ marginRight: '8px', color: '#ff0000' }}></i>YouTube URL
+                      </label>
+                      <input
+                        type="url"
+                        value={socialLinks.youtube}
+                        onChange={(e) => setSocialLinks({ ...socialLinks, youtube: e.target.value })}
+                        placeholder="https://youtube.com/yourchannel"
+                        style={styles.input}
+                      />
+                    </div>
+                    <button
+                      onClick={() => saveSettings('social', socialLinks)}
+                      style={{ ...styles.button('#e91e63'), marginTop: '10px' }}
+                    >
+                      <i className="fas fa-save"></i>Save Social Links
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -749,8 +900,40 @@ const Admin = () => {
                   )}
                 </div>
 
-                <input type="file" accept="image/*" onChange={handleFileChange} />
-                {imagePreview && <img src={imagePreview} alt="Preview" style={{ maxHeight: '120px', borderRadius: '8px' }} />}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#374151', fontSize: '0.9rem' }}>
+                      <i className="fas fa-image" style={{ marginRight: '8px', color: '#3b82f6' }}></i>Image
+                    </label>
+                    <input type="file" accept="image/*" onChange={handleFileChange} />
+                    {imagePreview && <img src={imagePreview} alt="Preview" style={{ maxHeight: '100px', borderRadius: '8px', marginTop: '8px' }} />}
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#374151', fontSize: '0.9rem' }}>
+                      <i className="fas fa-video" style={{ marginRight: '8px', color: '#ef4444' }}></i>Video (Optional, max 100MB)
+                    </label>
+                    <input
+                      type="file"
+                      accept="video/mp4,video/webm,video/ogg"
+                      onChange={(e) => {
+                        const selectedVideo = e.target.files[0];
+                        setVideoFile(selectedVideo);
+                        if (selectedVideo) {
+                          setVideoPreview(URL.createObjectURL(selectedVideo));
+                        } else {
+                          setVideoPreview(null);
+                        }
+                      }}
+                    />
+                    {videoPreview && (
+                      <video
+                        src={videoPreview}
+                        controls
+                        style={{ maxHeight: '100px', borderRadius: '8px', marginTop: '8px', width: '100%' }}
+                      />
+                    )}
+                  </div>
+                </div>
                 <button type="submit" style={styles.button('#2563eb')}>
                   <i className="fas fa-paper-plane"></i>{editingNews ? 'Update' : 'Publish'}
                 </button>

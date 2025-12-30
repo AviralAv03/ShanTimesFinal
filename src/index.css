@@ -2636,3 +2636,203 @@ footer {
         width: 100%;
     }
 }
+
+/* ===== ADMIN PANEL RESPONSIVE STYLES ===== */
+
+/* Admin wrapper class for targeting */
+.admin-wrapper {
+    display: flex;
+    min-height: 100vh;
+    font-family: sans-serif;
+}
+
+.admin-sidebar {
+    width: 260px;
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+    color: white;
+    padding: 25px 20px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    transition: transform 0.3s ease;
+    z-index: 1001;
+}
+
+.admin-main {
+    flex: 1;
+    padding: 30px;
+    background: #f1f5f9;
+    overflow-y: auto;
+}
+
+.admin-mobile-header {
+    display: none;
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+    color: white;
+    padding: 15px 20px;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.admin-hamburger {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+.admin-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+/* Admin Mobile Responsive */
+@media (max-width: 768px) {
+    .admin-wrapper {
+        flex-direction: column;
+    }
+
+    .admin-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        transform: translateX(-100%);
+        width: 280px;
+        min-height: 100vh;
+    }
+
+    .admin-sidebar.open {
+        transform: translateX(0);
+    }
+
+    .admin-overlay.open {
+        display: block;
+    }
+
+    .admin-mobile-header {
+        display: flex;
+    }
+
+    .admin-main {
+        padding: 15px;
+        margin-top: 0;
+        width: 100%;
+        min-height: calc(100vh - 60px);
+    }
+
+    /* Dashboard stat cards - stack on mobile */
+    .admin-stats-grid {
+        flex-direction: column !important;
+    }
+
+    .admin-stat-card {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    /* Cards full width */
+    .admin-main [style*="padding: 25px"] {
+        padding: 15px !important;
+    }
+
+    /* Forms - full width inputs */
+    .admin-main input[type="text"],
+    .admin-main input[type="email"],
+    .admin-main input[type="url"],
+    .admin-main input[type="password"],
+    .admin-main input[type="number"],
+    .admin-main select,
+    .admin-main textarea {
+        width: 100% !important;
+        font-size: 16px !important;
+        /* Prevents iOS zoom */
+    }
+
+    /* Buttons - full width on mobile */
+    .admin-main button[type="submit"] {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Toggle switches - proper spacing */
+    .admin-main [style*="display: flex"][style*="justifyContent: space-between"] {
+        gap: 15px;
+    }
+
+    /* Grid layouts - single column */
+    .admin-main [style*="gridTemplateColumns"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* List items - vertical on mobile */
+    .admin-main [style*="display: flex"][style*="gap: '15px'"] {
+        flex-wrap: wrap;
+    }
+
+    /* File upload inputs */
+    .admin-main input[type="file"] {
+        width: 100%;
+        font-size: 14px;
+    }
+
+    /* Make tabs scrollable on mobile */
+    .admin-sidebar>div:nth-child(2) {
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+    }
+
+    /* Navigation buttons in sidebar */
+    .admin-sidebar button {
+        padding: 12px 15px !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* Card titles */
+    .admin-main h2 {
+        font-size: 1.3rem !important;
+    }
+
+    .admin-main h3 {
+        font-size: 1.1rem !important;
+    }
+
+    /* Success toast - centered on mobile */
+    [style*="position: fixed"][style*="top: '20px'"][style*="right: '20px'"] {
+        left: 10px !important;
+        right: 10px !important;
+        top: 10px !important;
+    }
+
+    /* Image and video preview containers */
+    .admin-main [style*="display: grid"][style*="gridTemplateColumns: '1fr 1fr'"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Admin Small Mobile */
+@media (max-width: 480px) {
+    .admin-main {
+        padding: 10px;
+    }
+
+    .admin-main [style*="padding: 25px"],
+    .admin-main [style*="padding: '25px'"] {
+        padding: 12px !important;
+    }
+
+    .admin-sidebar {
+        width: 100%;
+    }
+}

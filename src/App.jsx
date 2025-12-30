@@ -26,6 +26,13 @@ const AppContent = () => {
   const [allNews, setAllNews] = useState([]);
   const [selectedNews, setSelectedNews] = useState(null);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [socialMediaEnabled, setSocialMediaEnabled] = useState(true);
+  const [socialLinks, setSocialLinks] = useState({
+    facebook: '',
+    twitter: '',
+    instagram: '',
+    youtube: ''
+  });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -78,6 +85,64 @@ const AppContent = () => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Google Analytics initialization
+  useEffect(() => {
+    const initAnalytics = async () => {
+      try {
+        const apiSnap = await getDoc(doc(db, "settings", "apis"));
+        if (apiSnap.exists()) {
+          const gaId = apiSnap.data().googleAnalyticsId;
+          if (gaId && gaId.startsWith('G-')) {
+            // Load GA4 script dynamically
+            if (!window.gtag) {
+              const script = document.createElement('script');
+              script.async = true;
+              script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+              document.head.appendChild(script);
+
+              window.dataLayer = window.dataLayer || [];
+              window.gtag = function () { window.dataLayer.push(arguments); };
+              window.gtag('js', new Date());
+              window.gtag('config', gaId);
+            }
+          }
+        }
+      } catch (e) {
+        console.log("Analytics init error:", e);
+      }
+    };
+    initAnalytics();
+  }, []);
+
+  // Track page views
+  useEffect(() => {
+    if (window.gtag) {
+      window.gtag('event', 'page_view', {
+        page_path: location.pathname,
+        page_title: document.title
+      });
+    }
+  }, [location.pathname]);
+
+  // Load social media settings
+  useEffect(() => {
+    const loadSocialSettings = async () => {
+      try {
+        const featSnap = await getDoc(doc(db, "settings", "features"));
+        if (featSnap.exists() && featSnap.data().socialMediaEnabled !== undefined) {
+          setSocialMediaEnabled(featSnap.data().socialMediaEnabled);
+        }
+        const socialSnap = await getDoc(doc(db, "settings", "social"));
+        if (socialSnap.exists()) {
+          setSocialLinks({ ...socialLinks, ...socialSnap.data() });
+        }
+      } catch (e) {
+        console.log("Social settings load error:", e);
+      }
+    };
+    loadSocialSettings();
   }, []);
 
   useEffect(() => {
@@ -246,20 +311,30 @@ const AppContent = () => {
               <p>
                 <strong>{t("संपादक:", "Editor:")}</strong> {t("सारिका सोनकर", "Sarika Sonkar")}
               </p>
-              <div className="social-links">
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-                  <i className="fab fa-facebook-f"></i>
-                </a>
-                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-                  <i className="fab fa-twitter"></i>
-                </a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                  <i className="fab fa-instagram"></i>
-                </a>
-                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
-                  <i className="fab fa-youtube"></i>
-                </a>
-              </div>
+              {socialMediaEnabled && (
+                <div className="social-links">
+                  {socialLinks.facebook && (
+                    <a href={socialLinks.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                      <i className="fab fa-facebook-f"></i>
+                    </a>
+                  )}
+                  {socialLinks.twitter && (
+                    <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                      <i className="fab fa-twitter"></i>
+                    </a>
+                  )}
+                  {socialLinks.instagram && (
+                    <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                      <i className="fab fa-instagram"></i>
+                    </a>
+                  )}
+                  {socialLinks.youtube && (
+                    <a href={socialLinks.youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+                      <i className="fab fa-youtube"></i>
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="footer-col">
@@ -268,8 +343,8 @@ const AppContent = () => {
                 <i className="fas fa-map-marker-alt"></i>
                 <span>
                   {t(
-                    "175/41 पीर जलील, दक्षिण खटिकाना, अमीनाबाद पार्क, लखनऊ - 226018",
-                    "175/41 Peer Jaleel, South Khatikana, Aminabad Park, Lucknow - 226018"
+                    "175/41 पीर जलील, अमीनाबाद पार्क, लखनऊ - 226018",
+                    "175/41 Peer Jaleel, Aminabad Park, Lucknow - 226018"
                   )}
                 </span>
               </p>

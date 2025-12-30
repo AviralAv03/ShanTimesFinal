@@ -216,18 +216,12 @@ const Home = ({ lang, toast }) => {
           </SidebarSection>
         )}
 
-        {features.adsEnabled && sidebarAds.length > 0 ? (
+        {features.adsEnabled && sidebarAds.length > 0 && (
           <div className="sidebar-ad-card">
             <span className="sidebar-ad-label">{lang === 'hi' ? 'विज्ञापन' : 'Sponsored'}</span>
             <img src={sidebarAds[0].imgUrl} alt="Advertisement" />
           </div>
-        ) : features.adsEnabled ? (
-          <div className="sidebar-ad-placeholder">
-            <i className="fas fa-ad"></i>
-            <span>{t.adSpace}</span>
-            <a href="/contact">{t.contactAd}</a>
-          </div>
-        ) : null}
+        )}
 
         {features.popularMonthEnabled !== false && (
           <SidebarSection title={t.popularMonth} icon="fa-chart-line">
