@@ -72,6 +72,48 @@ const NewsDetail = ({ lang }) => {
         setMetaTag('name', 'twitter:url', url);
 
         setMetaTag('name', 'description', description);
+
+        // Add JSON-LD structured data for rich search results
+        addStructuredData(data, url, description, image);
+    };
+
+    const addStructuredData = (data, url, description, image) => {
+        // Remove existing structured data if any
+        const existingScript = document.querySelector('script[type="application/ld+json"]');
+        if (existingScript) existingScript.remove();
+
+        const structuredData = {
+            "@context": "https://schema.org",
+            "@type": "NewsArticle",
+            "headline": data.title,
+            "description": description,
+            "image": image,
+            "datePublished": new Date(data.timestamp).toISOString(),
+            "dateModified": new Date(data.timestamp).toISOString(),
+            "author": {
+                "@type": "Organization",
+                "name": "Shan Times",
+                "url": "https://shantimes.in"
+            },
+            "publisher": {
+                "@type": "Organization",
+                "name": "Shan Times",
+                "logo": {
+                    "@type": "ImageObject",
+                    "url": "https://shantimes.in/og-image.png"
+                }
+            },
+            "mainEntityOfPage": {
+                "@type": "WebPage",
+                "@id": url
+            },
+            "articleSection": data.category || "News"
+        };
+
+        const script = document.createElement('script');
+        script.type = 'application/ld+json';
+        script.textContent = JSON.stringify(structuredData);
+        document.head.appendChild(script);
     };
 
     const resetMetaTags = () => {
@@ -91,6 +133,10 @@ const NewsDetail = ({ lang }) => {
         setMetaTag('name', 'twitter:url', defaultUrl);
 
         setMetaTag('name', 'description', defaultDesc);
+
+        // Remove structured data script
+        const existingScript = document.querySelector('script[type="application/ld+json"]');
+        if (existingScript) existingScript.remove();
     };
 
     const setMetaTag = (attr, key, value) => {
