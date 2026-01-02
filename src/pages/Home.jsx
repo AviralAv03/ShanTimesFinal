@@ -253,7 +253,7 @@ const Home = ({ lang, toast }) => {
               <p style={{ fontWeight: 'bold', marginBottom: '10px', color: 'var(--text-primary)' }}>
                 <i className="fas fa-share-alt" style={{ marginRight: '8px', color: 'var(--primary)' }}></i>{t.share}:
               </p>
-              <ShareButtons title={selectedNews.title} />
+              <ShareButtons title={selectedNews.title} articleId={selectedNews.id} />
             </div>
           </div>
         </div>

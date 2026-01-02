@@ -8,6 +8,7 @@ import CategoryNews from './pages/CategoryNews';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Epaper from './pages/Epaper';
+import NewsDetail from './pages/NewsDetail';
 import Admin from './Admin';
 
 import ScrollToTop from './components/ScrollToTop';
@@ -295,6 +296,7 @@ const AppContent = () => {
         <Route path="/technology" element={<CategoryNews category="Technology" title={t("प्रौद्योगिकी समाचार", "Technology News")} lang={lang} />} />
         <Route path="/epaper" element={<Epaper lang={lang} />} />
         <Route path="/contact" element={<Contact lang={lang} toast={toast} />} />
+        <Route path="/news/:newsId" element={<NewsDetail lang={lang} />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<Admin />} />
       </Routes>

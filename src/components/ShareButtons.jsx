@@ -1,7 +1,10 @@
 import React from 'react';
 
-const ShareButtons = ({ title, url }) => {
-    const shareUrl = url || window.location.href;
+const ShareButtons = ({ title, url, articleId }) => {
+    // Generate article-specific URL if articleId is provided
+    const shareUrl = articleId
+        ? `https://shantimes.in/news/${articleId}`
+        : (url || window.location.href);
     const shareTitle = encodeURIComponent(title);
     const shareUrlEncoded = encodeURIComponent(shareUrl);
 
@@ -58,3 +61,4 @@ const ShareButtons = ({ title, url }) => {
 };
 
 export default ShareButtons;
+
