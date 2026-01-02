@@ -46,6 +46,12 @@ const CategoryNews = ({ category, title, lang }) => {
     return Math.max(1, Math.ceil(words / wordsPerMinute));
   };
 
+  // Strip HTML tags from content for plain text excerpts
+  const stripHtml = (html) => {
+    if (!html) return '';
+    return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+  };
+
   const sortedNews = [...news].sort((a, b) => {
     if (sortOrder === 'newest') {
       return b.timestamp - a.timestamp;
@@ -152,7 +158,7 @@ const CategoryNews = ({ category, title, lang }) => {
                   {n.title}
                 </h3>
                 <p className="card-excerpt">
-                  {n.content.substring(0, viewMode === 'list' ? 200 : 100)}...
+                  {stripHtml(n.content).substring(0, viewMode === 'list' ? 200 : 100)}...
                 </p>
                 <div className="card-meta">
                   <span>
@@ -187,7 +193,7 @@ const CategoryNews = ({ category, title, lang }) => {
               {selectedNews.category}
             </span>
             <h2>{selectedNews.title}</h2>
-            <p>{selectedNews.content}</p>
+            <div className="rich-content" dangerouslySetInnerHTML={{ __html: selectedNews.content }}></div>
 
             <div className="modal-meta">
               <span>
@@ -205,7 +211,7 @@ const CategoryNews = ({ category, title, lang }) => {
                 <i className="fas fa-share-alt" style={{ marginRight: '8px', color: 'var(--primary)' }}></i>
                 {t.share}:
               </p>
-              <ShareButtons title={selectedNews.title} />
+              <ShareButtons title={selectedNews.title} articleId={selectedNews.id} />
             </div>
           </div>
         </div>
