@@ -138,10 +138,73 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
         }
     };
 
+    const fileInputRef = useRef(null);
+    const [isUploading, setIsUploading] = useState(false);
+
     const insertImage = () => {
-        const url = prompt('Enter image URL:');
-        if (url) {
-            execCommand('insertHTML', `<img src="${url}" alt="Image" style="max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; cursor: pointer;" />`);
+        const choice = window.confirm('Click OK to upload an image from your device, or Cancel to enter a URL.');
+        if (choice) {
+            // Trigger file input with a small delay to ensure the confirm dialog has fully closed
+            setTimeout(() => {
+                if (fileInputRef.current) {
+                    fileInputRef.current.click();
+                } else {
+                    alert('File upload not available. Please try again or enter a URL.');
+                }
+            }, 100);
+        } else {
+            const url = prompt('Enter image URL:');
+            if (url) {
+                execCommand('insertHTML', `<img src="${url}" alt="Image" style="max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; cursor: pointer;" />`);
+            }
+        }
+    };
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Only JPEG, PNG, GIF, and WebP images are allowed.');
+            return;
+        }
+
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image size must be less than 5MB.');
+            return;
+        }
+
+        setIsUploading(true);
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('type', 'image');
+
+            const response = await fetch('/api/upload.php', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success && result.url) {
+                execCommand('insertHTML', `<img src="${result.url}" alt="Image" style="max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; cursor: pointer;" />`);
+            } else {
+                alert('Upload failed: ' + (result.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('Failed to upload image. Please try entering a URL instead.');
+        } finally {
+            setIsUploading(false);
+            // Reset file input
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
         }
     };
 
@@ -203,6 +266,31 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
 
     return (
         <div style={{ border: '1px solid #e2e8f0', borderRadius: '10px', overflow: 'hidden' }}>
+            {/* Hidden file input for image upload */}
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                style={{ display: 'none' }}
+            />
+
+            {/* Upload indicator */}
+            {isUploading && (
+                <div style={{
+                    padding: '10px 15px',
+                    background: '#dbeafe',
+                    borderBottom: '1px solid #93c5fd',
+                    color: '#1e40af',
+                    fontSize: '0.85rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
+                }}>
+                    <i className="fas fa-spinner fa-spin"></i>
+                    Uploading image...
+                </div>
+            )}
             <div style={{
                 display: 'flex',
                 flexWrap: 'wrap',

@@ -206,6 +206,23 @@ const NewsDetail = ({ lang }) => {
                     />
                 )}
 
+                {article.videoUrl && (
+                    <div style={{ padding: '20px', background: '#000' }}>
+                        <video
+                            src={article.videoUrl}
+                            controls
+                            style={{
+                                width: '100%',
+                                maxHeight: '500px',
+                                objectFit: 'contain'
+                            }}
+                            poster={article.imgUrl}
+                        >
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                )}
+
                 <div style={{ padding: '30px' }}>
                     <div style={{ marginBottom: '15px' }}>
                         <span style={{

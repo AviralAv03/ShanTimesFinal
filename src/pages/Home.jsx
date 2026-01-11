@@ -127,10 +127,30 @@ const Home = ({ lang, toast }) => {
         <span className="mini-news-category">
           {article.category}
           {article.isPremium && <span style={{ marginLeft: '5px', color: '#f59e0b' }}><i className="fas fa-crown"></i></span>}
+          {article.videoUrl && <span style={{ marginLeft: '5px', color: '#ef4444' }}><i className="fas fa-video"></i></span>}
         </span>
         <h5 className="mini-news-title">{article.title}</h5>
       </div>
-      {article.imgUrl && <img src={article.imgUrl} alt="" className="mini-news-thumb" />}
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        {article.imgUrl && <img src={article.imgUrl} alt="" className="mini-news-thumb" />}
+        {article.videoUrl && article.imgUrl && (
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            background: 'rgba(0,0,0,0.7)',
+            borderRadius: '50%',
+            width: '24px',
+            height: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <i className="fas fa-play" style={{ color: 'white', fontSize: '0.6rem', marginLeft: '2px' }}></i>
+          </div>
+        )}
+      </div>
     </div>
   );
 
@@ -147,12 +167,24 @@ const Home = ({ lang, toast }) => {
 
         {topStory && (
           <div className="top-story-card">
-            {topStory.imgUrl && (
+            {/* Show video player if video exists, otherwise show image */}
+            {topStory.videoUrl ? (
+              <video
+                src={topStory.videoUrl}
+                controls
+                poster={topStory.imgUrl}
+                className="top-story-image"
+                style={{ objectFit: 'cover', background: '#000' }}
+              >
+                Your browser does not support the video tag.
+              </video>
+            ) : topStory.imgUrl && (
               <img src={topStory.imgUrl} alt={topStory.title} className="top-story-image" onClick={() => openNews(topStory)} />
             )}
             <div className="top-story-content">
               <span className="top-story-badge">
                 <i className="fas fa-fire" style={{ marginRight: '8px' }}></i>{t.topStory}
+                {topStory.videoUrl && <i className="fas fa-video" style={{ marginLeft: '10px', color: '#ef4444' }}></i>}
               </span>
               <h2 className="top-story-title" onClick={() => openNews(topStory)}>{topStory.title}</h2>
               <p className="card-excerpt">{stripHtml(topStory.content)?.substring(0, 200)}...</p>
@@ -177,8 +209,22 @@ const Home = ({ lang, toast }) => {
           ) : otherNews.slice(0, 6).map(n => (
             <div key={n.id} className="news-card">
               <div className="card-img-wrapper">
-                {n.imgUrl && <img src={n.imgUrl} alt={n.title} className="card-img" onClick={() => openNews(n)} loading="lazy" />}
+                {/* Show video player if video exists, otherwise show image */}
+                {n.videoUrl ? (
+                  <video
+                    src={n.videoUrl}
+                    controls
+                    poster={n.imgUrl}
+                    className="card-img"
+                    style={{ objectFit: 'cover', background: '#000', height: '200px' }}
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                ) : n.imgUrl && (
+                  <img src={n.imgUrl} alt={n.title} className="card-img" onClick={() => openNews(n)} loading="lazy" />
+                )}
                 {n.isPremium && <span className="premium-tag"><i className="fas fa-crown"></i></span>}
+                {n.videoUrl && <span className="video-tag" style={{ position: 'absolute', top: '10px', left: '10px', background: '#ef4444', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}><i className="fas fa-video" style={{ marginRight: '4px' }}></i>VIDEO</span>}
               </div>
               <div className="card-body">
                 <span className="card-category">{n.category}</span>
@@ -242,6 +288,22 @@ const Home = ({ lang, toast }) => {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="close-modal-btn" onClick={() => setSelectedNews(null)}><i className="fas fa-times"></i></button>
             {selectedNews.imgUrl && <img src={selectedNews.imgUrl} alt={selectedNews.title} />}
+            {selectedNews.videoUrl && (
+              <div style={{ padding: '15px', background: '#000', marginTop: selectedNews.imgUrl ? '0' : '0' }}>
+                <video
+                  src={selectedNews.videoUrl}
+                  controls
+                  style={{
+                    width: '100%',
+                    maxHeight: '400px',
+                    objectFit: 'contain'
+                  }}
+                  poster={selectedNews.imgUrl}
+                >
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            )}
             <span style={{ color: 'var(--primary)', fontWeight: 'bold', textTransform: 'uppercase' }}>{selectedNews.category}</span>
             <h2>{selectedNews.title}</h2>
             <div className="rich-content" dangerouslySetInnerHTML={{ __html: selectedNews.content }}></div>

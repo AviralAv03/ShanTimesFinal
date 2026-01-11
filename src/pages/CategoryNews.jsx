@@ -140,8 +140,19 @@ const CategoryNews = ({ category, title, lang }) => {
               className="news-card"
               style={viewMode === 'list' ? { flexDirection: 'row', alignItems: 'stretch' } : {}}
             >
-              {n.imgUrl && (
-                <div className="card-img-wrapper" style={viewMode === 'list' ? { width: '300px', flexShrink: 0 } : {}}>
+              <div className="card-img-wrapper" style={viewMode === 'list' ? { width: '300px', flexShrink: 0 } : {}}>
+                {/* Show video player if video exists, otherwise show image */}
+                {n.videoUrl ? (
+                  <video
+                    src={n.videoUrl}
+                    controls
+                    poster={n.imgUrl}
+                    className="card-img"
+                    style={{ objectFit: 'cover', background: '#000', height: viewMode === 'list' ? '100%' : '200px', minHeight: viewMode === 'list' ? '180px' : 'auto' }}
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                ) : n.imgUrl && (
                   <img
                     src={n.imgUrl}
                     alt={n.title}
@@ -150,8 +161,9 @@ const CategoryNews = ({ category, title, lang }) => {
                     loading="lazy"
                     style={viewMode === 'list' ? { height: '100%', minHeight: '180px' } : {}}
                   />
-                </div>
-              )}
+                )}
+                {n.videoUrl && <span className="video-tag" style={{ position: 'absolute', top: '10px', left: '10px', background: '#ef4444', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}><i className="fas fa-video" style={{ marginRight: '4px' }}></i>VIDEO</span>}
+              </div>
               <div className="card-body">
                 <span className="card-category">{n.category}</span>
                 <h3 className="card-title" onClick={() => openNews(n)} style={{ cursor: 'pointer' }}>
@@ -188,6 +200,23 @@ const CategoryNews = ({ category, title, lang }) => {
             </button>
 
             {selectedNews.imgUrl && <img src={selectedNews.imgUrl} alt={selectedNews.title} />}
+
+            {selectedNews.videoUrl && (
+              <div style={{ padding: '15px', background: '#000' }}>
+                <video
+                  src={selectedNews.videoUrl}
+                  controls
+                  style={{
+                    width: '100%',
+                    maxHeight: '400px',
+                    objectFit: 'contain'
+                  }}
+                  poster={selectedNews.imgUrl}
+                >
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            )}
 
             <span style={{ color: 'var(--primary)', fontWeight: 'bold', textTransform: 'uppercase' }}>
               {selectedNews.category}
