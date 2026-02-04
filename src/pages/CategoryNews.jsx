@@ -3,6 +3,7 @@ import { db } from '../firebase';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import ShareButtons from '../components/ShareButtons';
 import SkeletonCard from '../components/SkeletonCard';
+import { updatePageSEO, addBreadcrumbSchema, removeBreadcrumbSchema, getCategoryMeta } from '../utils/seo';
 
 const CategoryNews = ({ category, title, lang }) => {
   const [news, setNews] = useState([]);
@@ -22,7 +23,22 @@ const CategoryNews = ({ category, title, lang }) => {
   };
 
   useEffect(() => {
-    document.title = `${title} | Shan Times`;
+    // Get category-specific SEO metadata
+    const categoryMeta = getCategoryMeta(category, lang);
+
+    // Update page SEO
+    updatePageSEO({
+      title: categoryMeta.title,
+      description: categoryMeta.description,
+      url: `https://shantimes.in/${category.toLowerCase()}`,
+      type: 'website'
+    });
+
+    // Add breadcrumb structured data
+    addBreadcrumbSchema([
+      { name: lang === 'hi' ? 'होम' : 'Home', url: 'https://shantimes.in/' },
+      { name: title, url: `https://shantimes.in/${category.toLowerCase()}` }
+    ]);
 
     const fetchNews = async () => {
       setLoading(true);
@@ -38,7 +54,12 @@ const CategoryNews = ({ category, title, lang }) => {
       setLoading(false);
     };
     fetchNews();
-  }, [category, title]);
+
+    // Cleanup on unmount
+    return () => {
+      removeBreadcrumbSchema();
+    };
+  }, [category, title, lang]);
 
   const calculateReadTime = (content) => {
     const wordsPerMinute = 200;

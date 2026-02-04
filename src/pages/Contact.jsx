@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import { collection, addDoc, doc, getDoc } from 'firebase/firestore';
+import { updatePageSEO, resetPageSEO } from '../utils/seo';
 
 const Contact = ({ lang, toast }) => {
   const [formData, setFormData] = useState({
@@ -16,7 +17,15 @@ const Contact = ({ lang, toast }) => {
   const [mapEmbedUrl, setMapEmbedUrl] = useState('');
 
   useEffect(() => {
-    document.title = lang === 'hi' ? "संपर्क करें | Shan Times" : "Contact Us | Shan Times";
+    // Set Contact page SEO
+    updatePageSEO({
+      title: lang === 'hi' ? 'संपर्क करें | Shan Times' : 'Contact Us | Shan Times',
+      description: lang === 'hi'
+        ? 'शान टाइम्स से संपर्क करें। पता: 175/41 पीर जलील, अमीनाबाद पार्क, लखनऊ। फोन: 9120967777'
+        : 'Contact Shan Times. Address: 175/41 Peer Jaleel, Aminabad Park, Lucknow. Phone: 9120967777',
+      url: 'https://shantimes.in/contact',
+      type: 'website'
+    });
 
     // Load map settings from Firebase
     const loadMapSettings = async () => {
@@ -34,6 +43,8 @@ const Contact = ({ lang, toast }) => {
       }
     };
     loadMapSettings();
+
+    return () => resetPageSEO();
   }, [lang]);
 
   const t = {

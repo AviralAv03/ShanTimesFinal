@@ -7,6 +7,7 @@ import TrendingNews from '../components/TrendingNews';
 import Newsletter from '../components/Newsletter';
 import ShareButtons from '../components/ShareButtons';
 import SkeletonCard from '../components/SkeletonCard';
+import { updatePageSEO, resetPageSEO } from '../utils/seo';
 
 const Home = ({ lang, toast }) => {
   const [news, setNews] = useState([]);
@@ -16,6 +17,7 @@ const Home = ({ lang, toast }) => {
   const [features, setFeatures] = useState({ newsletterEnabled: true, adsEnabled: true });
   const [popularSettings, setPopularSettings] = useState({ weekManual: [], monthManual: [], autoPopulate: true });
   const [latestPaper, setLatestPaper] = useState(null);
+
 
   const t = {
     topStory: lang === 'hi' ? 'प्रमुख खबर' : 'TOP STORY',
@@ -33,8 +35,16 @@ const Home = ({ lang, toast }) => {
   };
 
   useEffect(() => {
-    document.title = "Shan Times | राष्ट्रीय हिन्दी दैनिक";
+    // Set homepage SEO
+    updatePageSEO({
+      title: 'शान टाइम्स | Shan Times - राष्ट्रीय हिन्दी दैनिक',
+      description: 'शान टाइम्स - राष्ट्रीय हिन्दी दैनिक। लखनऊ, राष्ट्रीय, खेल, प्रौद्योगिकी की ताज़ा खबरें। Shan Times - National Hindi Daily Newspaper with latest news.',
+      url: 'https://shantimes.in/',
+      type: 'website'
+    });
     fetchData();
+
+    return () => resetPageSEO();
   }, []);
 
   // Close modal on ESC key press
@@ -205,8 +215,8 @@ const Home = ({ lang, toast }) => {
 
         <div className="news-grid">
           {loading ? (
-            <><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></>
-          ) : otherNews.slice(0, 6).map(n => (
+            <><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></>
+          ) : otherNews.slice(0, 24).map(n => (
             <div key={n.id} className="news-card">
               <div className="card-img-wrapper">
                 {/* Show video player if video exists, otherwise show image */}
@@ -236,12 +246,10 @@ const Home = ({ lang, toast }) => {
             </div>
           ))}
         </div>
-
-        {features.newsletterEnabled && <Newsletter lang={lang} onSuccess={(msg) => toast?.success(msg)} onError={(msg) => toast?.error(msg)} />}
       </div>
 
       <aside id="promo-sidebar">
-        <WeatherWidget lang={lang} />
+        {features.weatherEnabled !== false && <WeatherWidget lang={lang} />}
 
         {features.todaysPdfEnabled !== false && latestPaper && (
           <a

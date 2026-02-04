@@ -34,6 +34,12 @@ const AppContent = () => {
     instagram: '',
     youtube: ''
   });
+  const [featureToggles, setFeatureToggles] = useState({
+    darkMode: true,
+    languageSwitch: true,
+    epaperEnabled: true,
+    weatherEnabled: true
+  });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -127,23 +133,28 @@ const AppContent = () => {
     }
   }, [location.pathname]);
 
-  // Load social media settings
+  // Load social media settings and feature toggles
   useEffect(() => {
-    const loadSocialSettings = async () => {
+    const loadSettings = async () => {
       try {
         const featSnap = await getDoc(doc(db, "settings", "features"));
-        if (featSnap.exists() && featSnap.data().socialMediaEnabled !== undefined) {
-          setSocialMediaEnabled(featSnap.data().socialMediaEnabled);
+        if (featSnap.exists()) {
+          const data = featSnap.data();
+          if (data.socialMediaEnabled !== undefined) {
+            setSocialMediaEnabled(data.socialMediaEnabled);
+          }
+          // Load all feature toggles
+          setFeatureToggles(prev => ({ ...prev, ...data }));
         }
         const socialSnap = await getDoc(doc(db, "settings", "social"));
         if (socialSnap.exists()) {
           setSocialLinks({ ...socialLinks, ...socialSnap.data() });
         }
       } catch (e) {
-        console.log("Social settings load error:", e);
+        console.log("Settings load error:", e);
       }
     };
-    loadSocialSettings();
+    loadSettings();
   }, []);
 
   useEffect(() => {
@@ -204,42 +215,46 @@ const AppContent = () => {
               >
                 <i className="fas fa-search"></i>
               </button>
-              <button
-                onClick={toggleTheme}
-                className="theme-toggle"
-                aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
-              >
-                <i className={`fas ${theme === 'light' ? 'fa-moon' : 'fa-sun'}`}></i>
-              </button>
-              <div className={`lang-dropdown ${langDropdownOpen ? 'open' : ''}`}>
+              {featureToggles.darkMode !== false && (
                 <button
-                  className="lang-dropdown-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setLangDropdownOpen(!langDropdownOpen);
-                  }}
+                  onClick={toggleTheme}
+                  className="theme-toggle"
+                  aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
                 >
-                  <i className="fas fa-globe"></i>
-                  {lang === 'hi' ? 'भाषा' : 'Lang'}
-                  <i className="fas fa-chevron-down"></i>
+                  <i className={`fas ${theme === 'light' ? 'fa-moon' : 'fa-sun'}`}></i>
                 </button>
-                <div className="lang-dropdown-menu">
+              )}
+              {featureToggles.languageSwitch !== false && (
+                <div className={`lang-dropdown ${langDropdownOpen ? 'open' : ''}`}>
                   <button
-                    className={`lang-option ${lang === 'hi' ? 'active' : ''}`}
-                    onClick={() => selectLang('hi')}
+                    className="lang-dropdown-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLangDropdownOpen(!langDropdownOpen);
+                    }}
                   >
-                    <span style={{ fontWeight: 'bold', color: '#f97316' }}>हि</span> हिन्दी
-                    {lang === 'hi' && <i className="fas fa-check check"></i>}
+                    <i className="fas fa-globe"></i>
+                    {lang === 'hi' ? 'भाषा' : 'Lang'}
+                    <i className="fas fa-chevron-down"></i>
                   </button>
-                  <button
-                    className={`lang-option ${lang === 'en' ? 'active' : ''}`}
-                    onClick={() => selectLang('en')}
-                  >
-                    <span style={{ fontWeight: 'bold', color: '#3b82f6' }}>EN</span> English
-                    {lang === 'en' && <i className="fas fa-check check"></i>}
-                  </button>
+                  <div className="lang-dropdown-menu">
+                    <button
+                      className={`lang-option ${lang === 'hi' ? 'active' : ''}`}
+                      onClick={() => selectLang('hi')}
+                    >
+                      <span style={{ fontWeight: 'bold', color: '#f97316' }}>हि</span> हिन्दी
+                      {lang === 'hi' && <i className="fas fa-check check"></i>}
+                    </button>
+                    <button
+                      className={`lang-option ${lang === 'en' ? 'active' : ''}`}
+                      onClick={() => selectLang('en')}
+                    >
+                      <span style={{ fontWeight: 'bold', color: '#3b82f6' }}>EN</span> English
+                      {lang === 'en' && <i className="fas fa-check check"></i>}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
             <Link to="/" style={{ textDecoration: 'none' }}>
               <h1 className="logo">शान टाइम्स</h1>
@@ -265,7 +280,9 @@ const AppContent = () => {
                 <li><Link to="/sports" className={location.pathname === '/sports' ? 'active' : ''}>{t("खेल", "Sports")}</Link></li>
                 <li><Link to="/technology" className={location.pathname === '/technology' ? 'active' : ''}>{t("प्रौद्योगिकी", "Technology")}</Link></li>
                 <li><Link to="/editorial" className={location.pathname === '/editorial' ? 'active' : ''}>{t("संपादकीय", "Editorial")}</Link></li>
-                <li><Link to="/epaper" className={location.pathname === '/epaper' ? 'active' : ''}>{t("ई-पेपर", "E-Paper")}</Link></li>
+                {featureToggles.epaperEnabled !== false && (
+                  <li><Link to="/epaper" className={location.pathname === '/epaper' ? 'active' : ''}>{t("ई-पेपर", "E-Paper")}</Link></li>
+                )}
                 <li><Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>{t("संपर्क", "Contact")}</Link></li>
 
                 {/* Mobile-only menu items */}
@@ -274,12 +291,16 @@ const AppContent = () => {
                   <button className="mobile-action-btn" onClick={() => { setSearchOpen(true); setMenuOpen(false); }}>
                     <i className="fas fa-search"></i> {t("खोजें", "Search")}
                   </button>
-                  <button className="mobile-action-btn" onClick={() => { toggleTheme(); }}>
-                    <i className={`fas ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`}></i> {theme === 'dark' ? t("लाइट मोड", "Light Mode") : t("डार्क मोड", "Dark Mode")}
-                  </button>
-                  <button className="mobile-action-btn" onClick={() => { selectLang(lang === 'hi' ? 'en' : 'hi'); setMenuOpen(false); }}>
-                    <span>{lang === 'hi' ? '🌐' : '🇮🇳'}</span> {lang === 'hi' ? 'English' : 'हिन्दी'}
-                  </button>
+                  {featureToggles.darkMode !== false && (
+                    <button className="mobile-action-btn" onClick={() => { toggleTheme(); }}>
+                      <i className={`fas ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`}></i> {theme === 'dark' ? t("लाइट मोड", "Light Mode") : t("डार्क मोड", "Dark Mode")}
+                    </button>
+                  )}
+                  {featureToggles.languageSwitch !== false && (
+                    <button className="mobile-action-btn" onClick={() => { selectLang(lang === 'hi' ? 'en' : 'hi'); setMenuOpen(false); }}>
+                      <span>{lang === 'hi' ? '🌐' : '🇮🇳'}</span> {lang === 'hi' ? 'English' : 'हिन्दी'}
+                    </button>
+                  )}
                 </li>
               </ul>
             </div>
@@ -357,7 +378,9 @@ const AppContent = () => {
             <div className="footer-col">
               <h3>{t("त्वरित लिंक", "Quick Links")}</h3>
               <p><Link to="/">{t("होम", "Home")}</Link></p>
-              <p><Link to="/epaper">{t("ई-पेपर", "E-Paper")}</Link></p>
+              {featureToggles.epaperEnabled !== false && (
+                <p><Link to="/epaper">{t("ई-पेपर", "E-Paper")}</Link></p>
+              )}
               <p><Link to="/contact">{t("संपर्क करें", "Contact Us")}</Link></p>
               <p><a href="/admin" target="_blank" rel="noopener noreferrer">{t("एडमिन लॉगिन", "Admin Login")}</a></p>
             </div>

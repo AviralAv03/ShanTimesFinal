@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import { collection, query, orderBy, getDocs, doc, getDoc } from 'firebase/firestore';
+import { updatePageSEO, resetPageSEO } from '../utils/seo';
 
 const Epaper = ({ lang }) => {
   const [papers, setPapers] = useState([]);
@@ -24,9 +25,19 @@ const Epaper = ({ lang }) => {
   };
 
   useEffect(() => {
-    document.title = `${t.title} | Shan Times`;
+    // Set E-paper page SEO
+    updatePageSEO({
+      title: lang === 'hi' ? 'ई-पेपर संग्रह | Shan Times' : 'E-Paper Archive | Shan Times',
+      description: lang === 'hi'
+        ? 'शान टाइम्स ई-पेपर संग्रह। पिछले सभी अंक डाउनलोड करें और पढ़ें। राष्ट्रीय हिन्दी दैनिक।'
+        : 'Shan Times E-Paper archive. Download and read all past editions of the National Hindi Daily.',
+      url: 'https://shantimes.in/epaper',
+      type: 'website'
+    });
     fetchData();
-  }, []);
+
+    return () => resetPageSEO();
+  }, [lang]);
 
   const fetchData = async () => {
     try {
