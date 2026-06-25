@@ -481,6 +481,9 @@ const Admin = () => {
           ))}
         </div>
         <div style={{ marginTop: 'auto', borderTop: '1px solid #334155', paddingTop: '15px' }}>
+          <button onClick={() => window.open('/bill-maker', '_blank')} style={{ ...styles.navBtn(false), color: '#38bdf8' }}>
+            <i className="fas fa-file-invoice-dollar"></i>Bill Maker
+          </button>
           <button onClick={handleResetForms} style={{ ...styles.navBtn(false), color: '#fbbf24' }}>
             <i className="fas fa-eraser"></i>Reset Forms
           </button>

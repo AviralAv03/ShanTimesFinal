@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Epaper from './pages/Epaper';
 import NewsDetail from './pages/NewsDetail';
 import Admin from './Admin';
+import BillMaker from './pages/BillMaker';
 
 import ScrollToTop from './components/ScrollToTop';
 import SearchModal from './components/SearchModal';
@@ -185,6 +186,7 @@ const AppContent = () => {
 
   const t = (hi, en) => (lang === 'hi' ? hi : en);
   const isAdminPage = location.pathname === '/admin';
+  const isBillMakerPage = location.pathname === '/bill-maker';
 
   const handleSelectNews = (article) => {
     setSelectedNews(article);
@@ -193,7 +195,7 @@ const AppContent = () => {
 
   return (
     <div className="app-wrapper">
-      {!isAdminPage && (
+      {!isAdminPage && !isBillMakerPage && (
         <>
           {ticker && (
             <div className="ticker-wrap">
@@ -320,9 +322,10 @@ const AppContent = () => {
         <Route path="/news/:newsId" element={<NewsDetail lang={lang} />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/bill-maker" element={<BillMaker />} />
       </Routes>
 
-      {!isAdminPage && (
+      {!isAdminPage && !isBillMakerPage && (
         <footer>
           <div className="footer-content">
             <div className="footer-col">
